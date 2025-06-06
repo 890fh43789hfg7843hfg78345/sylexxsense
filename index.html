@@ -1,274 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sylexxsense</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background-color: #000;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-    }
+let loggedIn = false;
 
-    .hidden { display: none; }
+function showDashboard() {
+  loggedIn = true;
+  document.getElementById('auth').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  showSection('home');
+}
 
-    .navbar {
-      background-color: #111;
-      padding: 15px 30px;
-      display: flex;
-      align-items: center;
-      gap: 30px;
-      box-shadow: 0 2px 10px rgba(255,255,255,0.1);
-    }
+function showSection(section) {
+  const content = document.getElementById('content');
 
-    .navbar span {
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .navbar .brand {
-      font-size: 1.2rem;
-      color: white;
-      margin-right: auto;
-    }
-
-    .centered {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #111;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-      width: 100%;
-      max-width: 350px;
-      text-align: center;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #555;
-      border-radius: 6px;
-      background-color: #222;
-      color: #fff;
-    }
-
-    button {
-      padding: 12px 24px;
-      margin: 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .cta-button {
-      background: white;
-      color: black;
-      border: none;
-    }
-
-    .secondary-button {
-      background: transparent;
-      color: white;
-      border: 2px solid white;
-    }
-
-    .switch-btn {
-      background: none;
-      color: #aaa;
-      text-decoration: underline;
-      font-size: 0.9rem;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    #message {
-      margin-top: 15px;
-      font-size: 0.9rem;
-    }
-
-    .success { color: #0f0; }
-    .error { color: #f00; }
-
-    .content {
-      text-align: center;
-    }
-
-    .hero {
-      position: relative;
-      color: white;
-      height: 90vh;
-      background: url('background.png') center/cover no-repeat;
-    }
-
-    .hero-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 0 20px;
-    }
-
-    .hero h1 {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      max-width: 600px;
-      margin-bottom: 2rem;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Auth Section -->
-  <div id="auth" class="centered">
-    <div class="container">
-      <h2 id="form-title">Register</h2>
-      <input type="text" id="username" placeholder="Username" />
-      <input type="password" id="password" placeholder="Password" />
-      <button onclick="submitForm()">Submit</button>
-      <div class="switch-btn" onclick="toggleForm()" id="toggleText">Switch to Login</div>
-      <div id="message"></div>
-    </div>
-  </div>
-
-  <!-- Dashboard Section -->
-  <div id="dashboard" class="hidden">
-    <div class="navbar">
-      <span class="brand">Sylexxsense.cc</span>
-      <span onclick="showSection('home')">Home</span>
-      <span onclick="showSection('products')">Products</span>
-      <span onclick="openDiscord()">Discord</span>
-      <span onclick="signOut()">Sign Out</span>
-    </div>
-    <div class="content" id="content">
-      <!-- Home content will load here -->
-    </div>
-  </div>
-
-  <script>
-    let isLogin = false;
-
-    function toggleForm() {
-      isLogin = !isLogin;
-      document.getElementById('form-title').textContent = isLogin ? 'Login' : 'Register';
-      document.getElementById('toggleText').textContent = isLogin ? 'Switch to Register' : 'Switch to Login';
-      document.getElementById('message').textContent = '';
-    }
-
-    async function hashPassword(password) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function submitForm() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      const msg = document.getElementById('message');
-
-      if (!username || !password) {
-        msg.textContent = 'Please fill all fields';
-        msg.className = 'error';
-        return;
-      }
-
-      const hashed = await hashPassword(password);
-      const stored = localStorage.getItem(`user_${username}`);
-
-      if (isLogin) {
-        if (stored === hashed) {
-          showDashboard();
-        } else {
-          msg.textContent = 'Invalid username or password';
-          msg.className = 'error';
-        }
-      } else {
-        if (stored) {
-          msg.textContent = 'Username already exists';
-          msg.className = 'error';
-          return;
-        }
-        localStorage.setItem(`user_${username}`, hashed);
-        msg.textContent = 'Registration successful!';
-        msg.className = 'success';
-        showDashboard();
-      }
-    }
-
-    function showDashboard() {
-      document.getElementById('auth').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-      showSection('home');
-    }
-
-    function showSection(section) {
-      const content = document.getElementById('content');
-
-      if (section === 'home') {
-        content.innerHTML = `
-          <div class="hero">
-            <div class="hero-overlay">
-              <h1>Sylexxsense</h1>
-              <p>Outplay with Sylexxsense — your premium CS2 cheat for the edge you need in every battle.</p>
-              <div>
-                <button class="cta-button">Buy now!</button>
-                <button class="secondary-button">Read more...</button>
-              </div>
-            </div>
-          </div>
-        `;
-      } else if (section === 'products') {
-        content.innerHTML = `
-          <h2>Products</h2>
-          <div class="products">
-            <div class="product-card" onclick="productClick('14 days')">
-              <h3>Sylexxsense</h3><p>14 Days</p>
-            </div>
-            <div class="product-card" onclick="productClick('30 days')">
-              <h3>Sylexxsense</h3><p>30 Days</p>
-            </div>
-            <div class="product-card" onclick="productClick('3 months')">
-              <h3>Sylexxsense</h3><p>3 Months</p>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    function productClick(duration) {
-      alert(`"${duration}" isn't done yet.\nJoin the Discord to stay updated.`);
-    }
-
-    function openDiscord() {
-      window.open("https://discord.gg/dn6V4geATr", "_blank");
-    }
-
-    function signOut() {
+  if (section === 'home') {
+    if (!loggedIn) {
+      alert("You must log in to access the homepage.");
       document.getElementById('dashboard').classList.add('hidden');
       document.getElementById('auth').classList.remove('hidden');
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
+      return;
     }
-  </script>
-</body>
-</html>
+
+    content.innerHTML = `
+      <div class="hero">
+        <div class="hero-overlay">
+          <h1>Sylexxsense</h1>
+          <p>Outplay with Sylexxsense — your premium CS2 cheat for the edge you need in every battle.</p>
+          <div>
+            <button class="cta-button">Buy now!</button>
+            <button class="secondary-button">Read more...</button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (section === 'products') {
+    content.innerHTML = `
+      <h2>Products</h2>
+      <div class="products">
+        <div class="product-card" onclick="productClick('14 days')">
+          <h3>Sylexxsense</h3><p>14 Days</p>
+        </div>
+        <div class="product-card" onclick="productClick('30 days')">
+          <h3>Sylexxsense</h3><p>30 Days</p>
+        </div>
+        <div class="product-card" onclick="productClick('3 months')">
+          <h3>Sylexxsense</h3><p>3 Months</p>
+        </div>
+      </div>
+    `;
+  }
+}
