@@ -13,69 +13,8 @@
       font-family: 'Segoe UI', sans-serif;
     }
 
-    .centered {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+    .hidden { display: none; }
 
-    .container {
-      background-color: #111;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-      width: 100%;
-      max-width: 350px;
-      text-align: center;
-    }
-
-    h2 { margin-bottom: 20px; }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #555;
-      border-radius: 6px;
-      background-color: #222;
-      color: #fff;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background-color: #fff;
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover { background-color: #ddd; }
-
-    .switch-btn {
-      background: none;
-      color: #aaa;
-      text-decoration: underline;
-      font-size: 0.9rem;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    #message {
-      margin-top: 15px;
-      font-size: 0.9rem;
-    }
-
-    .success { color: #0f0; }
-    .error { color: #f00; }
-
-    /* Nav bar and content */
     .navbar {
       background-color: #111;
       padding: 15px 30px;
@@ -96,39 +35,110 @@
       margin-right: auto;
     }
 
-    .content {
+    .centered {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #111;
       padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 350px;
       text-align: center;
     }
 
-    .products {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background-color: #222;
+      color: #fff;
     }
 
-    .product-card {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      padding: 20px;
-      border-radius: 10px;
-      width: 160px;
+    button {
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .cta-button {
+      background: white;
+      color: black;
+      border: none;
+    }
+
+    .secondary-button {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .switch-btn {
+      background: none;
+      color: #aaa;
+      text-decoration: underline;
+      font-size: 0.9rem;
+      margin-top: 10px;
       cursor: pointer;
     }
 
-    .product-card:hover {
-      background: #222;
+    #message {
+      margin-top: 15px;
+      font-size: 0.9rem;
     }
 
-    .hidden {
-      display: none;
+    .success { color: #0f0; }
+    .error { color: #f00; }
+
+    .content {
+      text-align: center;
+    }
+
+    .hero {
+      position: relative;
+      color: white;
+      height: 90vh;
+      background: url('background.png') center/cover no-repeat;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .hero h1 {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin-bottom: 2rem;
     }
   </style>
 </head>
 <body>
 
-  <!-- Login/Register Section -->
+  <!-- Auth Section -->
   <div id="auth" class="centered">
     <div class="container">
       <h2 id="form-title">Register</h2>
@@ -150,7 +160,7 @@
       <span onclick="signOut()">Sign Out</span>
     </div>
     <div class="content" id="content">
-      <!-- Dynamic content goes here -->
+      <!-- Home content will load here -->
     </div>
   </div>
 
@@ -172,39 +182,38 @@
     }
 
     async function submitForm() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
-  const msg = document.getElementById('message');
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const msg = document.getElementById('message');
 
-  if (!username || !password) {
-    msg.textContent = 'Please fill all fields';
-    msg.className = 'error';
-    return;
-  }
+      if (!username || !password) {
+        msg.textContent = 'Please fill all fields';
+        msg.className = 'error';
+        return;
+      }
 
-  const hashed = await hashPassword(password);
-  const stored = localStorage.getItem(user_${username});
+      const hashed = await hashPassword(password);
+      const stored = localStorage.getItem(`user_${username}`);
 
-  if (isLogin) {
-    if (stored === hashed) {
-      showDashboard();
-    } else {
-      msg.textContent = 'Invalid username or password';
-      msg.className = 'error';
+      if (isLogin) {
+        if (stored === hashed) {
+          showDashboard();
+        } else {
+          msg.textContent = 'Invalid username or password';
+          msg.className = 'error';
+        }
+      } else {
+        if (stored) {
+          msg.textContent = 'Username already exists';
+          msg.className = 'error';
+          return;
+        }
+        localStorage.setItem(`user_${username}`, hashed);
+        msg.textContent = 'Registration successful!';
+        msg.className = 'success';
+        showDashboard();
+      }
     }
-  } else {
-    if (stored) {
-      msg.textContent = 'Username already exists';
-      msg.className = 'error';
-      return;
-    }
-    localStorage.setItem(user_${username}, hashed);
-    msg.textContent = 'Registration successful!';
-    msg.className = 'success';
-    showDashboard(); 
-  }
-}
-
 
     function showDashboard() {
       document.getElementById('auth').classList.add('hidden');
@@ -214,10 +223,22 @@
 
     function showSection(section) {
       const content = document.getElementById('content');
+
       if (section === 'home') {
-        content.innerHTML = '<h2>Will be done soon</h2>';
+        content.innerHTML = `
+          <div class="hero">
+            <div class="hero-overlay">
+              <h1>Sylexxsense</h1>
+              <p>Outplay with Sylexxsense — your premium CS2 cheat for the edge you need in every battle.</p>
+              <div>
+                <button class="cta-button">Buy now!</button>
+                <button class="secondary-button">Read more...</button>
+              </div>
+            </div>
+          </div>
+        `;
       } else if (section === 'products') {
-        content.innerHTML = 
+        content.innerHTML = `
           <h2>Products</h2>
           <div class="products">
             <div class="product-card" onclick="productClick('14 days')">
@@ -230,12 +251,12 @@
               <h3>Sylexxsense</h3><p>3 Months</p>
             </div>
           </div>
-        ;
+        `;
       }
     }
 
     function productClick(duration) {
-      alert("${duration}" isn't done yet.\nJoin the Discord to stay updated.);
+      alert(`"${duration}" isn't done yet.\nJoin the Discord to stay updated.`);
     }
 
     function openDiscord() {
