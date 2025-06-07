@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Invite-Only Website</title>
+  <title>Sylexxsense</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -12,6 +12,7 @@
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
     }
+
     .centered {
       display: flex;
       flex-direction: column;
@@ -19,6 +20,7 @@
       justify-content: center;
       height: 100vh;
     }
+
     .container {
       background-color: #111;
       padding: 40px;
@@ -28,7 +30,9 @@
       max-width: 350px;
       text-align: center;
     }
+
     h2 { margin-bottom: 20px; }
+
     input {
       width: 100%;
       padding: 12px;
@@ -38,6 +42,7 @@
       background-color: #222;
       color: #fff;
     }
+
     button {
       width: 100%;
       padding: 12px;
@@ -50,7 +55,9 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     button:hover { background-color: #ddd; }
+
     .switch-btn {
       background: none;
       color: #aaa;
@@ -59,12 +66,16 @@
       margin-top: 10px;
       cursor: pointer;
     }
+
     #message {
       margin-top: 15px;
       font-size: 0.9rem;
     }
+
     .success { color: #0f0; }
     .error { color: #f00; }
+
+    /* Nav bar and content */
     .navbar {
       background-color: #111;
       padding: 15px 30px;
@@ -73,25 +84,30 @@
       gap: 30px;
       box-shadow: 0 2px 10px rgba(255,255,255,0.1);
     }
+
     .navbar span {
       font-weight: bold;
       cursor: pointer;
     }
+
     .navbar .brand {
       font-size: 1.2rem;
       color: white;
       margin-right: auto;
     }
+
     .content {
       padding: 40px;
       text-align: center;
     }
+
     .products {
       display: flex;
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
     }
+
     .product-card {
       background: #1a1a1a;
       border: 1px solid #333;
@@ -100,45 +116,51 @@
       width: 160px;
       cursor: pointer;
     }
-    .product-card:hover { background: #222; }
-    .hidden { display: none; }
+
+    .product-card:hover {
+      background: #222;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Login/Register Section -->
   <div id="auth" class="centered">
     <div class="container">
       <h2 id="form-title">Register</h2>
       <input type="text" id="username" placeholder="Username" />
       <input type="password" id="password" placeholder="Password" />
-      <input type="text" id="inviteCode" placeholder="Invite Code" class="hidden" />
       <button onclick="submitForm()">Submit</button>
       <div class="switch-btn" onclick="toggleForm()" id="toggleText">Switch to Login</div>
       <div id="message"></div>
     </div>
   </div>
+
+  <!-- Dashboard Section -->
   <div id="dashboard" class="hidden">
     <div class="navbar">
-      <span class="brand">InviteOnly.cc</span>
+      <span class="brand">Sylexxsense.cc</span>
       <span onclick="showSection('home')">Home</span>
       <span onclick="showSection('products')">Products</span>
       <span onclick="openDiscord()">Discord</span>
       <span onclick="signOut()">Sign Out</span>
     </div>
-    <div class="content" id="content"></div>
+    <div class="content" id="content">
+      <!-- Dynamic content goes here -->
+    </div>
   </div>
-  <script>
-    // Simulated in-memory storage (resets on page reload)
-    let users = new Map();
-    let invites = new Set(['INVITE123', 'INVITE456']); // Predefined invite codes
 
+  <script>
     let isLogin = false;
-    let currentUser = null;
 
     function toggleForm() {
       isLogin = !isLogin;
       document.getElementById('form-title').textContent = isLogin ? 'Login' : 'Register';
       document.getElementById('toggleText').textContent = isLogin ? 'Switch to Register' : 'Switch to Login';
-      document.getElementById('inviteCode').classList.toggle('hidden', isLogin);
       document.getElementById('message').textContent = '';
     }
 
@@ -152,45 +174,34 @@
     async function submitForm() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
-      const inviteCode = document.getElementById('inviteCode').value.trim();
       const msg = document.getElementById('message');
 
-      if (!username || !password || (!isLogin && !inviteCode)) {
+      if (!username || !password) {
         msg.textContent = 'Please fill all fields';
         msg.className = 'error';
         return;
       }
 
-      const hashedPassword = await hashPassword(password);
+      const hashed = await hashPassword(password);
+      const stored = localStorage.getItem(`user_${username}`);
 
       if (isLogin) {
-        const storedHash = users.get(username);
-        if (storedHash && storedHash === hashedPassword) {
-          currentUser = username;
-          msg.textContent = 'Login successful!';
-          msg.className = 'success';
+        if (stored === hashed) {
           showDashboard();
         } else {
           msg.textContent = 'Invalid username or password';
           msg.className = 'error';
         }
       } else {
-        if (users.has(username)) {
+        if (stored) {
           msg.textContent = 'Username already exists';
           msg.className = 'error';
           return;
         }
-        if (!invites.has(inviteCode)) {
-          msg.textContent = 'Invalid invite code';
-          msg.className = 'error';
-          return;
-        }
-        users.set(username, hashedPassword);
-        invites.delete(inviteCode); // Mark invite as used
+        localStorage.setItem(`user_${username}`, hashed);
         msg.textContent = 'Registration successful!';
         msg.className = 'success';
-        currentUser = username;
-        showDashboard();
+        showDashboard(); 
       }
     }
 
@@ -203,19 +214,19 @@
     function showSection(section) {
       const content = document.getElementById('content');
       if (section === 'home') {
-        content.innerHTML = '<h2>Welcome</h2>';
+        content.innerHTML = '<h2>Sylexxsense</h2>';
       } else if (section === 'products') {
         content.innerHTML = `
           <h2>Products</h2>
           <div class="products">
             <div class="product-card" onclick="productClick('14 days')">
-              <h3>Subscription</h3><p>14 Days</p>
+              <h3>Sylexxsense</h3><p>14 Days</p>
             </div>
             <div class="product-card" onclick="productClick('30 days')">
-              <h3>Subscription</h3><p>30 Days</p>
+              <h3>Sylexxsense</h3><p>30 Days</p>
             </div>
             <div class="product-card" onclick="productClick('3 months')">
-              <h3>Subscription</h3><p>3 Months</p>
+              <h3>Sylexxsense</h3><p>3 Months</p>
             </div>
           </div>
         `;
@@ -231,12 +242,10 @@
     }
 
     function signOut() {
-      currentUser = null;
       document.getElementById('dashboard').classList.add('hidden');
       document.getElementById('auth').classList.remove('hidden');
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
-      document.getElementById('inviteCode').value = '';
     }
   </script>
 </body>
