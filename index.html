@@ -127,8 +127,12 @@
     <div class="content" id="content"></div>
   </div>
   <script>
+    // Simulated in-memory storage (resets on page reload)
+    let users = new Map();
+    let invites = new Set(['INVITE123', 'INVITE456']); // Predefined invite codes
+
     let isLogin = false;
-    const API_URL = 'https://your-worker.workers.dev'; // Replace with your Worker URL
+    let currentUser = null;
 
     function toggleForm() {
       isLogin = !isLogin;
@@ -157,31 +161,36 @@
         return;
       }
 
-      const hashed = await hashPassword(password);
-      const endpoint = isLogin ? `${API_URL}/api/login` : `${API_URL}/api/register`;
-      const body = isLogin
-        ? { username, password: hashed }
-        : { username, password: hashed, inviteCode };
+      const hashedPassword = await hashPassword(password);
 
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        const result = await response.json();
-
-        if (response.ok) {
-          msg.textContent = isLogin ? 'Login successful!' : 'Registration successful!';
+      if (isLogin) {
+        const storedHash = users.get(username);
+        if (storedHash && storedHash === hashedPassword) {
+          currentUser = username;
+          msg.textContent = 'Login successful!';
           msg.className = 'success';
           showDashboard();
         } else {
-          msg.textContent = result.error || 'An error occurred';
+          msg.textContent = 'Invalid username or password';
           msg.className = 'error';
         }
-      } catch (error) {
-        msg.textContent = 'Network error, please try again';
-        msg.className = 'error';
+      } else {
+        if (users.has(username)) {
+          msg.textContent = 'Username already exists';
+          msg.className = 'error';
+          return;
+        }
+        if (!invites.has(inviteCode)) {
+          msg.textContent = 'Invalid invite code';
+          msg.className = 'error';
+          return;
+        }
+        users.set(username, hashedPassword);
+        invites.delete(inviteCode); // Mark invite as used
+        msg.textContent = 'Registration successful!';
+        msg.className = 'success';
+        currentUser = username;
+        showDashboard();
       }
     }
 
@@ -222,6 +231,7 @@
     }
 
     function signOut() {
+      currentUser = null;
       document.getElementById('dashboard').classList.add('hidden');
       document.getElementById('auth').classList.remove('hidden');
       document.getElementById('username').value = '';
