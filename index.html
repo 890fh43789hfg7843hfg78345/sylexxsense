@@ -126,21 +126,18 @@
   </style>
 </head>
 <body>
-
-  <!-- Login/Register Section -->
   <div id="auth" class="centered">
     <div class="container">
       <h2 id="form-title">Register</h2>
       <input type="text" id="username" placeholder="Username" />
       <input type="password" id="password" placeholder="Password" />
-      <input type="text" id="invite" placeholder="Invite Code" />
+      <input type="text" id="invite" placeholder="Invite Code" class="hidden" />
       <button onclick="submitForm()">Submit</button>
       <div class="switch-btn" onclick="toggleForm()" id="toggleText">Switch to Login</div>
       <div id="message"></div>
     </div>
   </div>
 
-  <!-- Dashboard Section -->
   <div id="dashboard" class="hidden">
     <div class="navbar">
       <span class="brand">Sylexxsense.cc</span>
@@ -149,13 +146,12 @@
       <span onclick="openDiscord()">Discord</span>
       <span onclick="signOut()">Sign Out</span>
     </div>
-    <div class="content" id="content">
-      <!-- Dynamic content goes here -->
-    </div>
+    <div class="content" id="content"></div>
   </div>
 
   <script>
     let isLogin = false;
+    const apiBase = "https://your-cloudflare-worker.example.workers.dev"; // replace with real URL
 
     function toggleForm() {
       isLogin = !isLogin;
@@ -177,7 +173,6 @@
       const password = document.getElementById('password').value;
       const invite = document.getElementById('invite').value.trim();
       const msg = document.getElementById('message');
-
       if (!username || !password || (!isLogin && !invite)) {
         msg.textContent = 'Please fill all fields';
         msg.className = 'error';
@@ -185,44 +180,21 @@
       }
 
       const hashed = await hashPassword(password);
-      const stored = localStorage.getItem(`user_${username}`);
+      const endpoint = isLogin ? '/login' : '/register';
 
-      if (isLogin) {
-        if (username === 'devinviter' && password === 'devinviter') {
-          showAdminPanel();
-          return;
-        }
-
-        if (stored === hashed) {
-          showDashboard();
-        } else {
-          msg.textContent = 'Invalid username or password';
-          msg.className = 'error';
-        }
-      } else {
-        if (stored) {
-          msg.textContent = 'Username already exists';
-          msg.className = 'error';
-          return;
-        }
-
-        const validCodes = JSON.parse(localStorage.getItem('invites') || '[]');
-        if (!validCodes.includes(invite)) {
-          msg.textContent = 'Invalid or used invite code';
-          msg.className = 'error';
-          return;
-        }
-
-        // Register user
-        localStorage.setItem(`user_${username}`, hashed);
-
-        // Remove used invite
-        const updatedCodes = validCodes.filter(code => code !== invite);
-        localStorage.setItem('invites', JSON.stringify(updatedCodes));
-
-        msg.textContent = 'Registration successful!';
+      const res = await fetch(apiBase + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: hashed, invite })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        msg.textContent = data.message;
         msg.className = 'success';
         showDashboard();
+      } else {
+        msg.textContent = data.message || 'Error';
+        msg.className = 'error';
       }
     }
 
@@ -252,38 +224,6 @@
           </div>
         `;
       }
-    }
-
-    function showAdminPanel() {
-      document.getElementById('auth').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-      document.getElementById('content').innerHTML = `
-        <h2>Invite Code Generator</h2>
-        <button onclick="generateInvite()">Generate Invite Code</button>
-        <div id="invite-list" style="margin-top:20px;"></div>
-      `;
-      renderInvites();
-    }
-
-    function generateInvite() {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let code = '';
-      for (let i = 0; i < 24; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-
-      const invites = JSON.parse(localStorage.getItem('invites') || '[]');
-      invites.push(code);
-      localStorage.setItem('invites', JSON.stringify(invites));
-      renderInvites();
-    }
-
-    function renderInvites() {
-      const invites = JSON.parse(localStorage.getItem('invites') || '[]');
-      document.getElementById('invite-list').innerHTML = `
-        <h3>Active Invites:</h3>
-        <ul>${invites.map(code => `<li>${code}</li>`).join('')}</ul>
-      `;
     }
 
     function productClick(duration) {
