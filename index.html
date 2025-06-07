@@ -161,7 +161,7 @@
       const endpoint = isLogin ? `${API_URL}/api/login` : `${API_URL}/api/register`;
       const body = isLogin
         ? { username, password: hashed }
-        : { username, password: hashed, inviteCode造型: inviteCode };
+        : { username, password: hashed, inviteCode };
 
       try {
         const response = await fetch(endpoint, {
