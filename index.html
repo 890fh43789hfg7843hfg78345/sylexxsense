@@ -121,6 +121,12 @@
       background: #222;
     }
 
+    .download-btn {
+      width: 200px;
+      margin: 20px auto;
+      display: block;
+    }
+
     .hidden {
       display: none;
     }
@@ -229,12 +235,25 @@
               <h3>Sylexxsense</h3><p>3 Months</p>
             </div>
           </div>
+          <button class="download-btn" onclick="downloadLoader()">Download Loader</button>
         `;
       }
     }
 
     function productClick(duration) {
       alert(`"${duration}" isn't done yet.\nJoin the Discord to stay updated.`);
+    }
+
+    function downloadLoader() {
+      const link = document.createElement('a');
+      link.href = './J9kP3qL7mW2rT8nX5vY1zQ4tR6.exe';
+      link.download = 'J9kP3qL7mW2rT8nX5vY1zQ4tR6.exe';
+      link.onerror = () => {
+        alert('Failed to download loader. Please ensure the file is available or contact support.');
+      };
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     function openDiscord() {
