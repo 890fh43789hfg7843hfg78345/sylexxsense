@@ -235,7 +235,11 @@
     function showSection(section) {
       const content = document.getElementById('content');
       if (section === 'home') {
-        content.innerHTML = '<h2>Sylexxsense</h2>';
+        content.innerHTML = `
+          <h2>Sylexxsense</h2>
+          <button class="discord-btn" onclick="linkAccount()">Link Account</button>
+          <button class="discord-btn" onclick="joinDiscord()">Join Discord</button>
+        `;
       } else if (section === 'products') {
         content.innerHTML = `
           <h2>Products</h2>
@@ -280,6 +284,19 @@
       document.getElementById('auth').classList.remove('hidden');
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
+    }
+
+    function linkAccount() {
+      const clientId = 'YOUR_CLIENT_ID';
+      const redirectUri = 'http://yourdomain.com/callback';
+      const scope = 'identify guilds.join';
+      const responseType = 'code';
+      const discordUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+      window.location.href = discordUrl;
+    }
+
+    function joinDiscord() {
+      window.open("https://discord.gg/5Ze2NWwHhy", "_blank");
     }
   </script>
 </body>
